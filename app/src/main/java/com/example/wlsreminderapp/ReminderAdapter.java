@@ -1,13 +1,16 @@
 package com.example.wlsreminderapp;
 
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.wlsreminderapp.databinding.ItemReminderBinding;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -45,6 +48,12 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
         holder.b.tvTime.setText(
                 r.times == null ? "" : r.times.replace(",", "  /  "));
         holder.b.tvDays.setText(getDaysDisplay(r.days));
+
+        // 오늘 완료 여부 표시
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        boolean doneToday = today.equals(r.lastCompletedDate);
+        holder.b.tvCompleted.setVisibility(doneToday ? View.VISIBLE : View.GONE);
+
         holder.b.switchEnabled.setOnCheckedChangeListener(null);
         holder.b.switchEnabled.setChecked(r.isEnabled);
         holder.b.switchEnabled.setOnCheckedChangeListener(
@@ -86,7 +95,9 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
             return a.id == b.id && a.name.equals(b.name)
                     && a.isEnabled == b.isEnabled
                     && a.times.equals(b.times)
-                    && (a.days == null ? b.days == null : a.days.equals(b.days));
+                    && (a.days == null ? b.days == null : a.days.equals(b.days))
+                    && (a.lastCompletedDate == null ? b.lastCompletedDate == null
+                            : a.lastCompletedDate.equals(b.lastCompletedDate));
         }
     };
 }

@@ -15,6 +15,7 @@ public class Reminder {
     public String times; // "08:00,20:00"
     public String days;  // "2,3,4,5,6" (Calendar.DAY_OF_WEEK 값, 1=일 2=월 ... 7=토)
     public boolean isEnabled;
+    public String lastCompletedDate; // "yyyy-MM-dd", 오늘 날짜면 완료 표시
 
     public Reminder(String name, String description,
                     String times, String days, boolean isEnabled) {

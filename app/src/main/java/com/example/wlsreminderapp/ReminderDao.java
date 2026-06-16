@@ -25,4 +25,7 @@ public interface ReminderDao {
 
     @Update
     void update(Reminder reminder);
+
+    @Query("UPDATE reminders SET lastCompletedDate = :date WHERE id = :id")
+    void updateCompletedDate(int id, String date);
 }

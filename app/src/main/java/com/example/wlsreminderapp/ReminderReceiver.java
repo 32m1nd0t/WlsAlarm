@@ -8,6 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class ReminderReceiver extends BroadcastReceiver {
 
@@ -27,12 +31,23 @@ public class ReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        // 완료 버튼 → 이 알림만 제거
+        // 완료 버튼 → 이 알림만 제거 + 오늘 완료 날짜 DB 저장
         if (ACTION_DONE.equals(action)) {
             int notifId = intent.getIntExtra("notifId", 0);
             NotificationManager nm = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
             nm.cancel(notifId);
+            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    .format(new Date());
+            PendingResult result = goAsync();
+            Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    ReminderDatabase.get(context).reminderDao()
+                            .updateCompletedDate(notifId, today);
+                } finally {
+                    result.finish();
+                }
+            });
             return;
         }
 
@@ -112,6 +127,19 @@ public class ReminderReceiver extends BroadcastReceiver {
                         .setContentIntent(openPending)
                         .setDeleteIntent(reshowPending)
                         .addAction(0, "✅ 완료", donePending);
+
+        // 소리 알림일 때 잠금화면 전체화면 팝업 (Android 14+ 는 권한 없으면 heads-up으로 강등)
+        if (!isSilent) {
+            if (Build.VERSION.SDK_INT < 34) {
+                builder.setFullScreenIntent(openPending, true);
+            } else {
+                NotificationManager nmCheck = (NotificationManager)
+                        context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nmCheck.canUseFullScreenIntent()) {
+                    builder.setFullScreenIntent(openPending, true);
+                }
+            }
+        }
 
         NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);

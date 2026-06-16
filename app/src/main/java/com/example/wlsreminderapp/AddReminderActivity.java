@@ -1,11 +1,9 @@
 package com.example.wlsreminderapp;
 
 import android.os.Bundle;
-import android.view.Gravity;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+import com.google.android.material.chip.Chip;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.wlsreminderapp.databinding.ActivityAddReminderBinding;
 import java.util.ArrayList;
@@ -23,8 +21,9 @@ public class AddReminderActivity extends AppCompatActivity {
     private static final int[] DAY_VALUES = {2, 3, 4, 5, 6, 7, 1};
     private static final String[] DAY_LABELS = {"월","화","수","목","금","토","일"};
 
-    private int editReminderId = -1; // -1이면 추가 모드, 그 외면 편집 모드
-    private boolean editEnabled = true; // 편집 진입 시 원래 활성화 상태 보존
+    private int editReminderId = -1;         // -1이면 추가 모드, 그 외면 편집 모드
+    private boolean editEnabled = true;      // 편집 진입 시 원래 활성화 상태 보존
+    private String editLastCompletedDate = null; // 완료 날짜 보존
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,8 +137,8 @@ public class AddReminderActivity extends AppCompatActivity {
             // 기존 알람 전부 취소
             AlarmScheduler.cancelAll(this, editReminderId);
 
-            // 원래 활성화 상태 보존 (편집해도 꺼진 리마인더가 켜지지 않도록)
             Reminder updated = new Reminder(name, desc, timesStr, daysStr, editEnabled);
+            updated.lastCompletedDate = editLastCompletedDate; // 완료 날짜 보존
             updated.id = editReminderId;
             ReminderDatabase.get(this).reminderDao().update(updated);
 
@@ -175,7 +174,8 @@ public class AddReminderActivity extends AppCompatActivity {
             }
             if (r == null) return;
 
-            editEnabled = r.isEnabled; // 원래 활성화 상태 기억
+            editEnabled = r.isEnabled;
+            editLastCompletedDate = r.lastCompletedDate; // 완료 날짜도 보존
             final Reminder reminder = r;
             runOnUiThread(() -> {
                 binding.etName.setText(reminder.name);
@@ -231,28 +231,13 @@ public class AddReminderActivity extends AppCompatActivity {
     }
 
     private void addTimeChip(String timeStr) {
-        LinearLayout chip = new LinearLayout(this);
-        chip.setOrientation(LinearLayout.HORIZONTAL);
-        chip.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
-        chip.setPadding(16, 8, 16, 8);
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        p.setMargins(0, 0, 12, 0);
-        chip.setLayoutParams(p);
-        TextView tvTime = new TextView(this);
-        tvTime.setText(timeStr);
-        tvTime.setTextSize(15);
-        chip.addView(tvTime);
-        TextView tvRemove = new TextView(this);
-        tvRemove.setText("  ✕");
-        tvRemove.setTextSize(15);
-        tvRemove.setGravity(Gravity.CENTER);
-        tvRemove.setOnClickListener(vv -> {
+        Chip chip = new Chip(this);
+        chip.setText(timeStr);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> {
             timeList.remove(timeStr);
             binding.timeChipsContainer.removeView(chip);
         });
-        chip.addView(tvRemove);
         binding.timeChipsContainer.addView(chip);
     }
 }

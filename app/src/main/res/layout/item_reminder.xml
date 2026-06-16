@@ -43,7 +43,6 @@
                 android:textColor="#3F51B5"
                 android:textStyle="bold" />
 
-            <!-- 요일 표시 추가 -->
             <TextView
                 android:id="@+id/tvDays"
                 android:layout_width="wrap_content"
@@ -51,28 +50,43 @@
                 android:textSize="12sp"
                 android:textColor="#4CAF50" />
 
+            <TextView
+                android:id="@+id/tvCompleted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="✅ 오늘 완료"
+                android:textSize="12sp"
+                android:textColor="#2E7D32"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchEnabled"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp" />
 
-        <!-- 편집 버튼 추가 -->
         <ImageButton
             android:id="@+id/btnEdit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_edit"
+            android:tint="#3F51B5"
+            android:padding="6dp"
             android:contentDescription="편집" />
 
         <ImageButton
             android:id="@+id/btnDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_delete"
+            android:tint="#E53935"
+            android:padding="6dp"
             android:contentDescription="삭제" />
 
     </LinearLayout>

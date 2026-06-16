@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -105,6 +107,60 @@ public class MainActivity extends AppCompatActivity {
 
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddReminderActivity.class)));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_about) {
+            showAboutDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showAboutDialog() {
+        String ver = "알 수 없음";
+        try {
+            ver = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException ignored) {}
+        final String currentVer = ver;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Wls리마인더")
+                .setMessage("현재 버전: " + currentVer)
+                .setPositiveButton("업데이트 확인", (d, w) ->
+                        VersionChecker.check(this, new VersionChecker.Listener() {
+                            @Override
+                            public void onUpdateAvailable(String newVersion, String downloadUrl) {
+                                new AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("업데이트 알림")
+                                        .setMessage("새 버전 " + newVersion + "이 출시됐습니다.\n업데이트하시겠습니까?")
+                                        .setPositiveButton("업데이트", (d2, w2) ->
+                                                AppUpdater.start(MainActivity.this, downloadUrl))
+                                        .setNegativeButton("나중에", null)
+                                        .show();
+                            }
+                            @Override
+                            public void onNoUpdate() {
+                                Toast.makeText(MainActivity.this,
+                                        "최신 버전입니다 (" + currentVer + ")",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            @Override
+                            public void onError() {
+                                Toast.makeText(MainActivity.this,
+                                        "업데이트 확인 실패 (네트워크 확인)",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }))
+                .setNegativeButton("닫기", null)
+                .show();
     }
 
     // 배터리 최적화에서 앱 제외 요청 + 삼성 절전 수동 안내

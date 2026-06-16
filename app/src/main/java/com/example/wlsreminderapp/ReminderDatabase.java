@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {Reminder.class}, version = 3)
+@Database(entities = {Reminder.class}, version = 4)
 public abstract class ReminderDatabase extends RoomDatabase {
     public abstract ReminderDao reminderDao();
 
@@ -41,6 +41,14 @@ public abstract class ReminderDatabase extends RoomDatabase {
         }
     };
 
+    // 버전 3 → 4: 오늘 완료 날짜 컬럼 추가
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE reminders ADD COLUMN lastCompletedDate TEXT DEFAULT NULL");
+        }
+    };
+
     public static ReminderDatabase get(Context context) {
         if (INSTANCE == null) {
             synchronized (ReminderDatabase.class) {
@@ -50,7 +58,7 @@ public abstract class ReminderDatabase extends RoomDatabase {
                                     ReminderDatabase.class,
                                     "reminder_db"
                             )
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3) // 데이터 보존 마이그레이션
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                             // fallbackToDestructiveMigration() 제거!
                             .build();
                 }
