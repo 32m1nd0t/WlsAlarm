@@ -23,6 +23,7 @@
         </activity>
 
         <activity android:name=".AddReminderActivity" android:exported="false" />
+        <activity android:name=".InquiryActivity" android:exported="false" />
 
         <receiver android:name=".ReminderReceiver" android:exported="false" />
 

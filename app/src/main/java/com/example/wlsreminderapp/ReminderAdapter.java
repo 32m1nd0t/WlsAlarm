@@ -58,7 +58,7 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
         holder.b.switchEnabled.setChecked(r.isEnabled);
         holder.b.switchEnabled.setOnCheckedChangeListener(
                 (btn, checked) -> onToggle.onToggle(r, checked));
-        holder.b.btnEdit.setOnClickListener(v -> onEdit.onEdit(r));
+        holder.b.getRoot().setOnClickListener(v -> onEdit.onEdit(r));
         holder.b.btnDelete.setOnClickListener(v -> onDelete.onDelete(r));
     }
 

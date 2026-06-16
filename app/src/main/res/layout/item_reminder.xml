@@ -5,8 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="6dp"
+    android:clickable="true"
+    android:focusable="true"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:rippleColor="?attr/colorControlHighlight">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -68,16 +71,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp" />
-
-        <ImageButton
-            android:id="@+id/btnEdit"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_edit"
-            android:tint="#3F51B5"
-            android:padding="6dp"
-            android:contentDescription="편집" />
 
         <ImageButton
             android:id="@+id/btnDelete"

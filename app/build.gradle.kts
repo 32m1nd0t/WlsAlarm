@@ -10,8 +10,8 @@ android {
         applicationId = "com.example.wlsreminderapp"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.5.0"
+        versionCode = 4
+        versionName = "1.5.1"
     }
 
     buildFeatures {
