@@ -1,10 +1,11 @@
 ﻿<#
   release.ps1 — 버전 올리고 빌드 + GitHub Release 업로드 + version.json/소스 푸시까지 한 방에.
 
-  사용법:
-    .\release.ps1                # 끝자리 +1 (1.3 -> 1.4)
-    .\release.ps1 -Minor         # 중간자리 +1, 끝자리 0 (1.3 -> 2.0)
-    .\release.ps1 -Version 1.5   # 버전 직접 지정
+  사용법 (Semantic Versioning: Major.Minor.Patch):
+    .\release.ps1                # Patch +1  (1.5.0 -> 1.5.1)  버그 수정·소소한 개선
+    .\release.ps1 -Minor         # Minor +1  (1.5.0 -> 1.6.0)  새 기능 추가
+    .\release.ps1 -Major         # Major +1  (1.5.0 -> 2.0.0)  대규모 변경·구조 개편
+    .\release.ps1 -Version 2.1.0 # 버전 직접 지정
     .\release.ps1 -DryRun        # 실제 푸시/릴리스 없이 무엇을 할지만 출력
 
   전제(최초 1회):
@@ -13,6 +14,7 @@
 #>
 param(
     [string]$Version,
+    [switch]$Major,
     [switch]$Minor,
     [switch]$DryRun
 )
@@ -58,8 +60,11 @@ if ($Version) {
     $parts = $curName.Split(".")
     $vMajor = [int]$parts[0]
     $vMinor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
-    if ($Minor) { $vMajor++; $vMinor = 0 } else { $vMinor++ }
-    $newName = "$vMajor.$vMinor"
+    $vPatch = if ($parts.Length -gt 2) { [int]$parts[2] } else { 0 }
+    if     ($Major) { $vMajor++; $vMinor = 0; $vPatch = 0 }
+    elseif ($Minor) { $vMinor++;              $vPatch = 0 }
+    else            {                          $vPatch++   }
+    $newName = "$vMajor.$vMinor.$vPatch"
 }
 Write-Host "버전: $curName (code $curCode)  ->  $newName (code $newCode)" -ForegroundColor Cyan
 
