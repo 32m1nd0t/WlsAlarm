@@ -1,4 +1,4 @@
-<#
+﻿<#
   release.ps1 — 버전 올리고 빌드 + GitHub Release 업로드 + version.json/소스 푸시까지 한 방에.
 
   사용법:
@@ -33,6 +33,12 @@ if (-not $env:JAVA_HOME) {
     $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 }
 
+# gh 가 PATH 에 없으면 기본 설치 경로 보강 (설치 직후 PATH 미반영 대비)
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    $ghDir = "C:\Program Files\GitHub CLI"
+    if (Test-Path (Join-Path $ghDir "gh.exe")) { $env:PATH = "$env:PATH;$ghDir" }
+}
+
 function Write-NoBom([string]$path, [string]$text) {
     $enc = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($path, $text, $enc)
@@ -50,10 +56,10 @@ if ($Version) {
     $newName = $Version
 } else {
     $parts = $curName.Split(".")
-    $major = [int]$parts[0]
-    $minor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
-    if ($Minor) { $major++; $minor = 0 } else { $minor++ }
-    $newName = "$major.$minor"
+    $vMajor = [int]$parts[0]
+    $vMinor = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
+    if ($Minor) { $vMajor++; $vMinor = 0 } else { $vMinor++ }
+    $newName = "$vMajor.$vMinor"
 }
 Write-Host "버전: $curName (code $curCode)  ->  $newName (code $newCode)" -ForegroundColor Cyan
 
