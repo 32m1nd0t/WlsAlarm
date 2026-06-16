@@ -150,10 +150,25 @@ app/src/main/AndroidManifest.xml  # 권한, Activity/Receiver/Service, FileProvi
 - Android Studio: `Build > Build Bundle(s) / APK(s) > Build APK(s)`
 - 결과물: `app/build/outputs/apk/debug/app-debug.apk`
 
-### 배포 (업데이트)
-1. `build.gradle.kts`의 `versionCode` +1, `versionName` 올리기
-2. APK 빌드
-3. 구글드라이브에 새 APK 업로드 → FILE_ID 확인
-4. GitHub `version.json`의 `version` / `url` 수정
-5. APK는 디스코드/드라이브로 공유 (카카오톡은 APK 차단)
+### 배포 (업데이트) — `release.ps1` 자동화
+이 PC에서 PowerShell로 한 방에 처리한다. (수동 Drive 업로드 방식은 폐기)
+```powershell
+.\release.ps1            # versionName 끝자리 +1 (예 1.4→1.5)
+.\release.ps1 -Minor     # 중간자리 +1 (예 1.4→2.0)
+.\release.ps1 -Version 1.7   # 직접 지정
+.\release.ps1 -DryRun    # 미리보기
+```
+스크립트가 자동 수행: `build.gradle.kts`·`version.json` 갱신 → `assembleDebug` 빌드 →
+APK를 `WlsReminder.apk`(고정 이름)로 복사 → git commit+tag+push → `gh release` 업로드.
+
+- 저장소: **공개 단일** `32m1nd0t/WlsAlarm` (소스 + version.json + Releases 모두 여기).
+  앱이 익명으로 접근하므로 **반드시 public 유지** (private면 업데이트체크/다운로드 깨짐).
+- 다운로드 URL 고정: `…/releases/latest/download/WlsReminder.apk` → version.json url 안 바뀜.
+- 전제(최초 1회): `gh`(GitHub CLI) 설치 + `gh auth login` (32m1nd0t, repo 권한).
+- ⚠️ **빌드는 반드시 이 PC에서** 해야 debug 서명이 유지됨 → 기존 앱에 **덮어쓰기 설치(데이터 보존)**.
+  CI/다른 PC 빌드는 서명이 달라져 재설치=데이터 삭제가 되므로 금지.
 - ⚠️ 설치 시 기존 앱을 **삭제하지 말고 덮어쓰기**해야 데이터 유지됨.
+- 공유는 디스코드/링크로 (카카오톡은 APK 차단). 다운로드 링크가 곧 위 고정 URL.
+
+> `release.ps1`은 한글 주석 때문에 **UTF-8 BOM**으로 저장돼야 PowerShell 5.1에서 파싱됨.
+> Edit 도구로 수정하면 BOM이 벗겨질 수 있으니, 수정 후 BOM 재적용 필요.
