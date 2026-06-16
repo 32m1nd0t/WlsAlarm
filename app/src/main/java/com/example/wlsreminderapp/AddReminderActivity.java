@@ -1,8 +1,8 @@
 package com.example.wlsreminderapp;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 import com.google.android.material.chip.Chip;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.wlsreminderapp.databinding.ActivityAddReminderBinding;
@@ -15,7 +15,7 @@ public class AddReminderActivity extends AppCompatActivity {
 
     private ActivityAddReminderBinding binding;
     private final List<String> timeList = new ArrayList<>();
-    private ToggleButton[] dayButtons;
+    private Chip[] dayButtons;
 
     // 요일 순서: 월화수목금토일
     private static final int[] DAY_VALUES = {2, 3, 4, 5, 6, 7, 1};
@@ -31,8 +31,10 @@ public class AddReminderActivity extends AppCompatActivity {
         binding = ActivityAddReminderBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         // 요일 버튼 초기화
-        dayButtons = new ToggleButton[]{
+        dayButtons = new Chip[]{
                 binding.btnMon, binding.btnTue, binding.btnWed,
                 binding.btnThu, binding.btnFri, binding.btnSat, binding.btnSun
         };
@@ -45,8 +47,8 @@ public class AddReminderActivity extends AppCompatActivity {
             loadReminderForEdit(editReminderId);
         } else {
             setTitle("리마인더 추가");
-            // 기본: 모든 요일 선택
-            for (ToggleButton btn : dayButtons) btn.setChecked(true);
+            // 기본: 모든 요일 선택 (XML default checked 이미 true, 명시적 재확인)
+            for (Chip btn : dayButtons) btn.setChecked(true);
         }
 
         // 시간 추가 버튼
@@ -66,7 +68,16 @@ public class AddReminderActivity extends AppCompatActivity {
             addTimeChip(timeStr);
         });
 
-        // 저장/수정 버튼
+        setupSaveButton();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    private void setupSaveButton() {
         binding.btnSave.setOnClickListener(v -> {
             String name = binding.etName.getText().toString().trim();
             String desc = binding.etDesc.getText().toString().trim();
@@ -237,7 +248,10 @@ public class AddReminderActivity extends AppCompatActivity {
         chip.setOnCloseIconClickListener(v -> {
             timeList.remove(timeStr);
             binding.timeChipsContainer.removeView(chip);
+            binding.tvAddedLabel.setVisibility(
+                    timeList.isEmpty() ? View.GONE : View.VISIBLE);
         });
         binding.timeChipsContainer.addView(chip);
+        binding.tvAddedLabel.setVisibility(View.VISIBLE);
     }
 }
