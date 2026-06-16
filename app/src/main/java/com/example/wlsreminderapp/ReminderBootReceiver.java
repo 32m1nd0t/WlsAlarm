@@ -9,16 +9,18 @@ import java.util.concurrent.Executors;
 public class ReminderBootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Executors.newSingleThreadExecutor().execute(() -> {
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) return;
+        PendingResult result = goAsync();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
                 List<Reminder> list = ReminderDatabase.get(context)
                         .reminderDao().getAllOnce();
                 for (Reminder r : list) {
-                    if (r.isEnabled) {
-                        AlarmScheduler.schedule(context, r);
-                    }
+                    if (r.isEnabled) AlarmScheduler.schedule(context, r);
                 }
-            });
-        }
+            } finally {
+                result.finish();
+            }
+        });
     }
 }

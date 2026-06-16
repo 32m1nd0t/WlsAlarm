@@ -57,14 +57,27 @@ public class AppUpdater {
         long downloadId = dm.enqueue(request);
         Toast.makeText(context, "다운로드를 시작합니다...", Toast.LENGTH_SHORT).show();
 
-        // 다운로드 완료 감지 → 자동으로 설치 화면 띄우기
+        // 다운로드 완료 감지 → 성공이면 설치, 실패면 Toast
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context ctx, Intent intent) {
                 long id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                if (id == downloadId) {
-                    ctx.unregisterReceiver(this);
+                if (id != downloadId) return;
+                ctx.unregisterReceiver(this);
+
+                DownloadManager.Query query = new DownloadManager.Query().setFilterById(downloadId);
+                android.database.Cursor cursor = dm.query(query);
+                boolean success = false;
+                if (cursor != null && cursor.moveToFirst()) {
+                    int status = cursor.getInt(
+                            cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                    success = (status == DownloadManager.STATUS_SUCCESSFUL);
+                    cursor.close();
+                }
+                if (success) {
                     installApk(ctx);
+                } else {
+                    Toast.makeText(ctx, "다운로드 실패. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
                 }
             }
         };

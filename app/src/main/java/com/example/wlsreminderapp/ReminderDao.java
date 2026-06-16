@@ -11,7 +11,7 @@ import java.util.List;
 @Dao
 public interface ReminderDao {
 
-    @Query("SELECT * FROM reminders ORDER BY name")  // ← hour, minute 제거
+    @Query("SELECT * FROM reminders ORDER BY id")
     LiveData<List<Reminder>> getAll();
 
     @Query("SELECT * FROM reminders")

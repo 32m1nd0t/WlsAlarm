@@ -2,7 +2,9 @@ package com.example.wlsreminderapp;
 
 import android.Manifest;
 import android.app.AlarmManager;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -11,8 +13,10 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
         // 배터리 최적화 제외 (삼성 절전으로 알람이 멈추는 것 방지)
         requestIgnoreBatteryOptimization();
 
+        // 새 버전 첫 실행 시 패치노트 표시
+        checkAndShowWhatsNew();
+
         // 업데이트 체크
         VersionChecker.check(this, new VersionChecker.Listener() {
             @Override
@@ -78,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
                                 Executors.newSingleThreadExecutor().execute(() -> {
                                     ReminderDatabase.get(this).reminderDao().delete(reminder);
                                     AlarmScheduler.cancelAll(this, reminder.id);
+                                    ((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
+                                            .cancel(reminder.id);
                                     runOnUiThread(() ->
                                             Toast.makeText(this, "삭제됨", Toast.LENGTH_SHORT).show());
                                 }))
@@ -103,7 +112,18 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerView.setAdapter(adapter);
 
         ReminderDatabase.get(this).reminderDao().getAll()
-                .observe(this, list -> adapter.submitList(list));
+                .observe(this, list -> {
+                    adapter.submitList(list);
+                    binding.tvEmpty.setVisibility(
+                            list == null || list.isEmpty() ? View.VISIBLE : View.GONE);
+                });
+
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override public void onChanged() {
+                binding.tvEmpty.setVisibility(
+                        adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            }
+        });
 
         binding.fabAdd.setOnClickListener(v ->
                 startActivity(new Intent(this, AddReminderActivity.class)));
@@ -164,6 +184,32 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }))
                 .setNegativeButton("닫기", null)
+                .show();
+    }
+
+    // 새 버전으로 처음 실행된 경우 패치노트 다이얼로그 표시
+    private void checkAndShowWhatsNew() {
+        String currentVersion;
+        try {
+            currentVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            return;
+        }
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        String lastSeen = prefs.getString("last_seen_version", "");
+        if (currentVersion.equals(lastSeen)) return;
+
+        prefs.edit().putString("last_seen_version", currentVersion).apply();
+        // 최초 설치(lastSeen이 없을 때)는 패치노트 생략
+        if (lastSeen.isEmpty()) return;
+
+        String notes = getString(R.string.whats_new);
+        if (notes.isEmpty()) return;
+
+        new AlertDialog.Builder(this)
+                .setTitle("v" + currentVersion + " 업데이트 내용")
+                .setMessage(notes)
+                .setPositiveButton("확인", null)
                 .show();
     }
 

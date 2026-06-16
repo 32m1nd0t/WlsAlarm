@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Wls리마인더</string>
+    <!-- 버전 업데이트 시 이 내용을 수정하세요 -->
+    <string name="whats_new">• 알람 설정 화면이 더 깔끔해졌어요\n• ⋮ 메뉴에서 문의하기 / 버전 확인이 가능해요\n• 여러 안정성 문제를 수정했어요</string>
 </resources>

@@ -4,7 +4,6 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity(tableName = "reminders")
 public class Reminder {
@@ -43,7 +42,4 @@ public class Reminder {
         return list;
     }
 
-    public Set<Integer> getSelectedDays() {
-        return AlarmScheduler.parseDays(days);
-    }
 }

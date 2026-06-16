@@ -58,7 +58,7 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
         holder.b.switchEnabled.setChecked(r.isEnabled);
         holder.b.switchEnabled.setOnCheckedChangeListener(
                 (btn, checked) -> onToggle.onToggle(r, checked));
-        holder.b.getRoot().setOnClickListener(v -> onEdit.onEdit(r));
+        holder.b.llContent.setOnClickListener(v -> onEdit.onEdit(r));
         holder.b.btnDelete.setOnClickListener(v -> onDelete.onDelete(r));
     }
 
@@ -94,7 +94,7 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
         public boolean areContentsTheSame(@NonNull Reminder a, @NonNull Reminder b) {
             return a.id == b.id && a.name.equals(b.name)
                     && a.isEnabled == b.isEnabled
-                    && a.times.equals(b.times)
+                    && (a.times == null ? b.times == null : a.times.equals(b.times))
                     && (a.days == null ? b.days == null : a.days.equals(b.days))
                     && (a.lastCompletedDate == null ? b.lastCompletedDate == null
                             : a.lastCompletedDate.equals(b.lastCompletedDate));

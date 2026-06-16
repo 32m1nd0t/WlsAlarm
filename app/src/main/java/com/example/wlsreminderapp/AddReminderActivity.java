@@ -3,6 +3,7 @@ package com.example.wlsreminderapp;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 import com.google.android.material.chip.Chip;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.wlsreminderapp.databinding.ActivityAddReminderBinding;
@@ -15,11 +16,9 @@ public class AddReminderActivity extends AppCompatActivity {
 
     private ActivityAddReminderBinding binding;
     private final List<String> timeList = new ArrayList<>();
-    private Chip[] dayButtons;
+    private ToggleButton[] dayButtons;
 
-    // 요일 순서: 월화수목금토일
-    private static final int[] DAY_VALUES = {2, 3, 4, 5, 6, 7, 1};
-    private static final String[] DAY_LABELS = {"월","화","수","목","금","토","일"};
+    private static final int[] DAY_VALUES = {2, 3, 4, 5, 6, 7, 1}; // 월화수목금토일
 
     private int editReminderId = -1;         // -1이면 추가 모드, 그 외면 편집 모드
     private boolean editEnabled = true;      // 편집 진입 시 원래 활성화 상태 보존
@@ -34,7 +33,7 @@ public class AddReminderActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // 요일 버튼 초기화
-        dayButtons = new Chip[]{
+        dayButtons = new ToggleButton[]{
                 binding.btnMon, binding.btnTue, binding.btnWed,
                 binding.btnThu, binding.btnFri, binding.btnSat, binding.btnSun
         };
@@ -47,8 +46,7 @@ public class AddReminderActivity extends AppCompatActivity {
             loadReminderForEdit(editReminderId);
         } else {
             setTitle("리마인더 추가");
-            // 기본: 모든 요일 선택 (XML default checked 이미 true, 명시적 재확인)
-            for (Chip btn : dayButtons) btn.setChecked(true);
+            for (ToggleButton btn : dayButtons) btn.setChecked(true);
         }
 
         // 시간 추가 버튼

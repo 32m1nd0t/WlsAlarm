@@ -90,69 +90,111 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.08" />
 
-                <com.google.android.material.chip.ChipGroup
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:chipSpacingHorizontal="6dp"
-                    app:chipSpacingVertical="4dp">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnMon"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="월"
+                        android:textOff="월"
                         android:checked="true"
-                        android:text="월" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnTue"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="화"
+                        android:textOff="화"
                         android:checked="true"
-                        android:text="화" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnWed"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="수"
+                        android:textOff="수"
                         android:checked="true"
-                        android:text="수" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnThu"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="목"
+                        android:textOff="목"
                         android:checked="true"
-                        android:text="목" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnFri"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="금"
+                        android:textOff="금"
                         android:checked="true"
-                        android:text="금" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnSat"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="토"
+                        android:textOff="토"
                         android:checked="true"
-                        android:text="토" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.chip.Chip
+                    <ToggleButton
                         android:id="@+id/btnSun"
-                        style="@style/Widget.MaterialComponents.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="36dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:background="@drawable/bg_day_toggle"
+                        android:textColor="@color/chip_day_text"
+                        android:textOn="일"
+                        android:textOff="일"
                         android:checked="true"
-                        android:text="일" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
-                </com.google.android.material.chip.ChipGroup>
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

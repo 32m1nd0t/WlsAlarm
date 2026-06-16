@@ -61,18 +61,23 @@ public class VersionChecker {
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
 
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) sb.append(line);
-                reader.close();
+                String result;
+                try {
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) sb.append(line);
+                    reader.close();
+                    result = sb.toString();
+                } finally {
+                    conn.disconnect();
+                }
 
-                JSONObject json    = new JSONObject(sb.toString());
+                JSONObject json    = new JSONObject(result);
                 String latest      = json.getString("version");
                 String downloadUrl = json.getString("url");
 
-                // 최신 버전이 현재보다 "더 높을 때만" 업데이트 알림
                 if (isNewer(latest, currentVersion)) {
                     handler.post(() -> listener.onUpdateAvailable(latest, downloadUrl));
                 } else {
