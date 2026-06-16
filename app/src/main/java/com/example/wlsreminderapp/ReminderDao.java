@@ -1,0 +1,28 @@
+package com.example.wlsreminderapp;
+
+import androidx.lifecycle.LiveData;
+import androidx.room.Dao;
+import androidx.room.Delete;
+import androidx.room.Insert;
+import androidx.room.Query;
+import androidx.room.Update;
+import java.util.List;
+
+@Dao
+public interface ReminderDao {
+
+    @Query("SELECT * FROM reminders ORDER BY name")  // ← hour, minute 제거
+    LiveData<List<Reminder>> getAll();
+
+    @Query("SELECT * FROM reminders")
+    List<Reminder> getAllOnce();
+
+    @Insert
+    long insert(Reminder reminder);
+
+    @Delete
+    void delete(Reminder reminder);
+
+    @Update
+    void update(Reminder reminder);
+}

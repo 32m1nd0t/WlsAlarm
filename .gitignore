@@ -1,0 +1,29 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# 모듈 빌드 출력 (위 /build 는 루트만 무시하므로 추가)
+app/build/
+
+# 빌드된 APK/AAB — 배포는 GitHub Releases가 호스팅 (git에는 넣지 않음)
+*.apk
+*.aab
+
+# 서명 키 (절대 커밋 금지)
+*.jks
+*.keystore
+
+# Claude Code 개인 로컬 설정 (공유 안 함)
+.claude/settings.local.json
