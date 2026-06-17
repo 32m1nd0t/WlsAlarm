@@ -83,5 +83,7 @@ public class AlarmScheduler {
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             am.cancel(pending);
         }
+        // 반복 재알림도 취소
+        ReminderReceiver.cancelNag(context, reminderId);
     }
 }

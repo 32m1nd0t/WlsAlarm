@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Wls리마인더</string>
     <!-- 버전 업데이트 시 이 내용을 수정하세요 -->
-    <string name="whats_new">• 분 선택이 5분 단위로 변경됨.\n• 시간이 24시간제(00~23)로 표시됨.\n• 잠금 해제 시 미완료 알림 팝업이 표시됨.</string>
+    <string name="whats_new">• 분 선택이 5분 단위로 변경됨.\n• 시간이 24시간제(00~23)로 표시됨.\n• 설정 화면이 추가됨 (놓친 알림 반복 재알림 켜기/끄기·간격·소리).</string>
 </resources>

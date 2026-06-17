@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.PowerManager;
 import androidx.core.app.NotificationCompat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +27,10 @@ public class ReminderReceiver extends BroadcastReceiver {
     // 알림 액션 (자기 자신에게 보내는 명시적 브로드캐스트)
     public static final String ACTION_DONE   = "com.example.wlsreminderapp.ACTION_DONE";
     public static final String ACTION_RESHOW = "com.example.wlsreminderapp.ACTION_RESHOW";
+    public static final String ACTION_NAG    = "com.example.wlsreminderapp.ACTION_NAG";
+
+    // nag(반복 재알림) 알람 requestCode 오프셋
+    private static final int NAG_REQUEST_BASE = 950000;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -37,6 +42,7 @@ public class ReminderReceiver extends BroadcastReceiver {
             NotificationManager nm = (NotificationManager)
                     context.getSystemService(Context.NOTIFICATION_SERVICE);
             nm.cancel(notifId);
+            cancelNag(context, notifId); // 완료했으니 반복 재알림 중단
             String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     .format(new Date());
             PendingResult result = goAsync();
@@ -48,10 +54,6 @@ public class ReminderReceiver extends BroadcastReceiver {
                     result.finish();
                 }
             });
-            // 서비스에 재확인 요청 (완료됐으면 서비스 종료)
-            Intent recheck = new Intent(context, ReminderCheckService.class);
-            recheck.setAction(ReminderCheckService.ACTION_RECHECK);
-            context.startService(recheck);
             return;
         }
 
@@ -70,17 +72,96 @@ public class ReminderReceiver extends BroadcastReceiver {
             return;
         }
 
+        // 반복 재알림(nag): 아직 미완료면 다시 알리고 다음 nag 예약, 완료/비활성이면 중단
+        if (ACTION_NAG.equals(action)) {
+            final int fAlarmId = alarmId;
+            final String fName = name, fDesc = desc, fDays = days;
+            final int fHour = hour, fMinute = minute;
+            final String fNagDate = intent.getStringExtra("nagDate");
+            PendingResult result = goAsync();
+            Executors.newSingleThreadExecutor().execute(() -> {
+                try {
+                    int notifId = fAlarmId / 1000;
+                    Reminder r = ReminderDatabase.get(context).reminderDao().getById(notifId);
+                    String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            .format(new Date());
+                    // 같은 날 + 미완료 + 활성 + 설정 켜짐일 때만 반복 (자정 넘기면 중단)
+                    boolean stillPending = today.equals(fNagDate) && r != null && r.isEnabled
+                            && !today.equals(r.lastCompletedDate);
+                    if (!stillPending || !NagSettings.isEnabled(context)) return; // 중단
+                    boolean silent = !NagSettings.isSound(context);
+                    showNotification(context, fAlarmId, fName, fDesc, fHour, fMinute, silent);
+                    showPopupIfScreenOn(context, notifId, fName, fDesc);
+                    scheduleNag(context, fAlarmId, fName, fDesc, fHour, fMinute, fDays, fNagDate);
+                } finally {
+                    result.finish();
+                }
+            });
+            return;
+        }
+
         // 알람 정시 발동: 다음 요일/시간 재예약 + 소리/진동 알림
         AlarmScheduler.scheduleOne(context, alarmId, hour, minute, name, desc, days);
         showNotification(context, alarmId, name, desc, hour, minute, false);
+        showPopupIfScreenOn(context, alarmId / 1000, name, desc);
 
-        // 잠금 해제 팝업 서비스 시작
-        Intent serviceIntent = new Intent(context, ReminderCheckService.class);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent);
-        } else {
-            context.startService(serviceIntent);
+        // 미완료 시 반복 재알림 예약 (설정에서 켜진 경우)
+        if (NagSettings.isEnabled(context)) {
+            scheduleNag(context, alarmId, name, desc, hour, minute, days, null);
         }
+    }
+
+    /** 화면이 켜져 있으면 팝업 직접 표시 (꺼져/잠금 시엔 알림 FullScreenIntent가 처리) */
+    private static void showPopupIfScreenOn(Context context, int notifId,
+                                            String name, String desc) {
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        if (pm == null || !pm.isInteractive()) return;
+        Intent popup = new Intent(context, ReminderPopupActivity.class);
+        popup.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        popup.putExtra("ids", new int[]{notifId});
+        popup.putExtra("names", new String[]{name});
+        popup.putExtra("descs", new String[]{desc});
+        context.startActivity(popup);
+    }
+
+    /** 반복 재알림 예약 (현재 시각 + INTERVAL_MIN 분 후) */
+    public static void scheduleNag(Context context, int alarmId, String name, String desc,
+                                   int hour, int minute, String days, String nagDate) {
+        android.app.AlarmManager am = (android.app.AlarmManager)
+                context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        if (nagDate == null) {
+            nagDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        }
+        Intent i = new Intent(context, ReminderReceiver.class);
+        i.setAction(ACTION_NAG);
+        i.putExtra(EXTRA_ID, alarmId);
+        i.putExtra(EXTRA_NAME, name);
+        i.putExtra(EXTRA_DESC, desc);
+        i.putExtra("hour", hour);
+        i.putExtra("minute", minute);
+        i.putExtra("days", days);
+        i.putExtra("nagDate", nagDate);
+        int notifId = alarmId / 1000;
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context, notifId + NAG_REQUEST_BASE, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        long triggerAt = System.currentTimeMillis()
+                + NagSettings.getIntervalMin(context) * 60_000L;
+        am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, triggerAt, pi);
+    }
+
+    /** 예약된 반복 재알림 취소 */
+    public static void cancelNag(Context context, int notifId) {
+        android.app.AlarmManager am = (android.app.AlarmManager)
+                context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent i = new Intent(context, ReminderReceiver.class);
+        i.setAction(ACTION_NAG);
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context, notifId + NAG_REQUEST_BASE, i,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        am.cancel(pi);
     }
 
     // isSilent: true = 무음(초기세팅/재표시), false = 소리+진동(알람 시간)

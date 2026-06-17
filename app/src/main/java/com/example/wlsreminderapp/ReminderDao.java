@@ -17,6 +17,9 @@ public interface ReminderDao {
     @Query("SELECT * FROM reminders")
     List<Reminder> getAllOnce();
 
+    @Query("SELECT * FROM reminders WHERE id = :id")
+    Reminder getById(int id);
+
     @Insert
     long insert(Reminder reminder);
 

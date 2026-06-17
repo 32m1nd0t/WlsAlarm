@@ -1,7 +1,6 @@
 package com.example.wlsreminderapp;
 
 import android.app.NotificationManager;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -137,9 +136,7 @@ public class ReminderPopupActivity extends AppCompatActivity {
         Executors.newSingleThreadExecutor().execute(() -> {
             ReminderDatabase.get(this).reminderDao().updateCompletedDate(reminderId, today);
             ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(reminderId);
-            Intent recheck = new Intent(this, ReminderCheckService.class);
-            recheck.setAction(ReminderCheckService.ACTION_RECHECK);
-            startService(recheck);
+            ReminderReceiver.cancelNag(this, reminderId); // 반복 재알림 중단
         });
         runOnUiThread(() -> {
             // 행과 바로 앞 구분선 숨김
