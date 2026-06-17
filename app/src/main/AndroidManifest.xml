@@ -30,11 +30,13 @@
         <activity
             android:name=".ReminderPopupActivity"
             android:theme="@style/Theme.ReminderPopup"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:exported="false" />
 
         <service
             android:name=".ReminderCheckService"
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="dataSync|shortService"
             android:exported="false" />
 
         <receiver android:name=".ReminderReceiver" android:exported="false" />

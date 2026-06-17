@@ -142,13 +142,22 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         // 소리 알림일 때 잠금화면 전체화면 팝업 (Android 14+ 는 권한 없으면 heads-up으로 강등)
         if (!isSilent) {
+            Intent popupFsiIntent = new Intent(context, ReminderPopupActivity.class);
+            popupFsiIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            popupFsiIntent.putExtra("ids", new int[]{notifId});
+            popupFsiIntent.putExtra("names", new String[]{name});
+            popupFsiIntent.putExtra("descs", new String[]{desc});
+            PendingIntent popupFsiPending = PendingIntent.getActivity(
+                    context, notifId + 800000, popupFsiIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
             if (Build.VERSION.SDK_INT < 34) {
-                builder.setFullScreenIntent(openPending, true);
+                builder.setFullScreenIntent(popupFsiPending, true);
             } else {
                 NotificationManager nmCheck = (NotificationManager)
                         context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (nmCheck.canUseFullScreenIntent()) {
-                    builder.setFullScreenIntent(openPending, true);
+                    builder.setFullScreenIntent(popupFsiPending, true);
                 }
             }
         }
