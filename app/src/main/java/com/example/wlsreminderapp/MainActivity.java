@@ -33,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     // 권한 체이닝 단계
     private static final int STEP_BATTERY      = 1;
     private static final int STEP_FULLSCREEN   = 2;
-    private static final int STEP_EXACT_ALARM  = 3;
+    private static final int STEP_OVERLAY      = 3;
+    private static final int STEP_EXACT_ALARM  = 4;
     private int nextPermStep = STEP_BATTERY;
 
     // 알림 권한 (시스템 다이얼로그, 앱 안에서 처리)
@@ -182,24 +183,53 @@ public class MainActivity extends AppCompatActivity {
 
             case STEP_FULLSCREEN: {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    proceedToPermStep(STEP_EXACT_ALARM);
+                    proceedToPermStep(STEP_OVERLAY);
                     return;
                 }
                 NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 if (nm == null || nm.canUseFullScreenIntent()) {
-                    proceedToPermStep(STEP_EXACT_ALARM);
+                    proceedToPermStep(STEP_OVERLAY);
                     return;
                 }
                 new AlertDialog.Builder(this)
                         .setTitle("잠금화면 팝업 허용")
                         .setMessage("알람 시간에 잠금화면 위로 알림이 크게 뜨게 하려면\n"
-                                + "'다른 앱 위에 표시' 권한이 필요해요.\n\n"
+                                + "'전체 화면 알림' 권한이 필요해요.\n\n"
                                 + "허용하지 않으면 상단 배너로만 표시돼요.")
                         .setPositiveButton("허용하러 가기", (d, w) -> {
-                            nextPermStep = STEP_EXACT_ALARM;
+                            nextPermStep = STEP_OVERLAY;
                             settingsLauncher.launch(new Intent(
                                     Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
                                     Uri.parse("package:" + getPackageName())));
+                        })
+                        .setNegativeButton("나중에", (d, w) -> proceedToPermStep(STEP_OVERLAY))
+                        .show();
+                break;
+            }
+
+            case STEP_OVERLAY: {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                    proceedToPermStep(STEP_EXACT_ALARM);
+                    return;
+                }
+                if (Settings.canDrawOverlays(this)) {
+                    proceedToPermStep(STEP_EXACT_ALARM);
+                    return;
+                }
+                new AlertDialog.Builder(this)
+                        .setTitle("다른 앱 위에 표시 허용")
+                        .setMessage("다른 앱을 쓰는 중에도 알림 팝업이 화면 위로 뜨게 하려면\n"
+                                + "'다른 앱 위에 표시' 권한이 필요해요.\n\n"
+                                + "허용하지 않으면 다른 앱 사용 중엔 상단 알림으로만 표시돼요.")
+                        .setPositiveButton("허용하러 가기", (d, w) -> {
+                            nextPermStep = STEP_EXACT_ALARM;
+                            try {
+                                settingsLauncher.launch(new Intent(
+                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                        Uri.parse("package:" + getPackageName())));
+                            } catch (Exception e) {
+                                proceedToPermStep(STEP_EXACT_ALARM);
+                            }
                         })
                         .setNegativeButton("나중에", (d, w) -> proceedToPermStep(STEP_EXACT_ALARM))
                         .show();
