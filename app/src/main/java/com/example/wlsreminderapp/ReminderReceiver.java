@@ -48,6 +48,10 @@ public class ReminderReceiver extends BroadcastReceiver {
                     result.finish();
                 }
             });
+            // 서비스에 재확인 요청 (완료됐으면 서비스 종료)
+            Intent recheck = new Intent(context, ReminderCheckService.class);
+            recheck.setAction(ReminderCheckService.ACTION_RECHECK);
+            context.startService(recheck);
             return;
         }
 
@@ -69,6 +73,14 @@ public class ReminderReceiver extends BroadcastReceiver {
         // 알람 정시 발동: 다음 요일/시간 재예약 + 소리/진동 알림
         AlarmScheduler.scheduleOne(context, alarmId, hour, minute, name, desc, days);
         showNotification(context, alarmId, name, desc, hour, minute, false);
+
+        // 잠금 해제 팝업 서비스 시작
+        Intent serviceIntent = new Intent(context, ReminderCheckService.class);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent);
+        } else {
+            context.startService(serviceIntent);
+        }
     }
 
     // isSilent: true = 무음(초기세팅/재표시), false = 소리+진동(알람 시간)
@@ -114,7 +126,7 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, channelId)
-                        .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+                        .setSmallIcon(R.drawable.ic_notification_bell)
                         .setContentTitle("⏰ " + name)
                         .setContentText(timeStr + " - 아직 완료하지 않은 일정입니다")
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(bodyText))

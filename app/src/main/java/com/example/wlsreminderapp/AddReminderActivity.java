@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import com.google.android.material.chip.Chip;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.wlsreminderapp.databinding.ActivityAddReminderBinding;
 import java.util.ArrayList;
@@ -32,6 +33,24 @@ public class AddReminderActivity extends AppCompatActivity {
 
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // 시 NumberPicker (00 – 23)
+        String[] hours = new String[24];
+        for (int i = 0; i < 24; i++) hours[i] = String.format(Locale.getDefault(), "%02d", i);
+        binding.npHour.setMinValue(0);
+        binding.npHour.setMaxValue(23);
+        binding.npHour.setDisplayedValues(hours);
+
+        // 분 NumberPicker (5분 단위: 00, 05, 10 … 55)
+        String[] minutes = {"00","05","10","15","20","25","30","35","40","45","50","55"};
+        binding.npMinute.setMinValue(0);
+        binding.npMinute.setMaxValue(11);
+        binding.npMinute.setDisplayedValues(minutes);
+
+        // 현재 시간으로 초기값 설정 (분은 5분 단위로 반올림)
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        binding.npHour.setValue(now.get(java.util.Calendar.HOUR_OF_DAY));
+        binding.npMinute.setValue(Math.round(now.get(java.util.Calendar.MINUTE) / 5.0f) % 12);
+
         // 요일 버튼 초기화
         dayButtons = new ToggleButton[]{
                 binding.btnMon, binding.btnTue, binding.btnWed,
@@ -51,8 +70,8 @@ public class AddReminderActivity extends AppCompatActivity {
 
         // 시간 추가 버튼
         binding.btnAddTime.setOnClickListener(v -> {
-            int hour   = binding.timePicker.getHour();
-            int minute = binding.timePicker.getMinute();
+            int hour   = binding.npHour.getValue();
+            int minute = binding.npMinute.getValue() * 5;
             String timeStr = String.format(Locale.getDefault(), "%02d:%02d", hour, minute);
             if (timeList.contains(timeStr)) {
                 Toast.makeText(this, "이미 추가된 시간입니다", Toast.LENGTH_SHORT).show();
@@ -71,8 +90,32 @@ public class AddReminderActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        confirmDiscard();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        confirmDiscard();
+    }
+
+    private boolean hasUnsavedChanges() {
+        String name = binding.etName.getText() != null
+                ? binding.etName.getText().toString().trim() : "";
+        return !name.isEmpty() || !timeList.isEmpty();
+    }
+
+    private void confirmDiscard() {
+        if (!hasUnsavedChanges()) {
+            finish();
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("작성 중인 내용이 있어요")
+                .setMessage("저장하지 않고 나가면 입력한 내용이 사라져요.\n그래도 나가시겠어요?")
+                .setPositiveButton("나가기", (d, w) -> finish())
+                .setNegativeButton("계속 작성", null)
+                .show();
     }
 
     private void setupSaveButton() {

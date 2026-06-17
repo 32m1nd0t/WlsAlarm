@@ -7,15 +7,9 @@
 
     <style name="Theme.WlsReminderApp" parent="Base.Theme.WlsReminderApp" />
 
-    <style name="DayChip" parent="Widget.MaterialComponents.Chip.Filter">
-        <item name="chipBackgroundColor">@color/chip_day_bg</item>
-        <item name="android:textColor">@color/chip_day_text</item>
-        <item name="checkedIconVisible">false</item>
-        <item name="chipStartPadding">0dp</item>
-        <item name="chipEndPadding">0dp</item>
-        <item name="textStartPadding">2dp</item>
-        <item name="textEndPadding">2dp</item>
-        <item name="android:textSize">13sp</item>
-        <item name="android:textStyle">bold</item>
+    <style name="Theme.ReminderPopup" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 </resources>

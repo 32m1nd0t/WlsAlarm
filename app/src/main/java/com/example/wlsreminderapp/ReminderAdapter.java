@@ -94,6 +94,7 @@ public class ReminderAdapter extends ListAdapter<Reminder, ReminderAdapter.VH> {
         public boolean areContentsTheSame(@NonNull Reminder a, @NonNull Reminder b) {
             return a.id == b.id && a.name.equals(b.name)
                     && a.isEnabled == b.isEnabled
+                    && (a.description == null ? b.description == null : a.description.equals(b.description))
                     && (a.times == null ? b.times == null : a.times.equals(b.times))
                     && (a.days == null ? b.days == null : a.days.equals(b.days))
                     && (a.lastCompletedDate == null ? b.lastCompletedDate == null
