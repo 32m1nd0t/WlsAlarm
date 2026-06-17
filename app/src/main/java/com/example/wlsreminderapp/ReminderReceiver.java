@@ -1,5 +1,6 @@
 package com.example.wlsreminderapp;
 
+import android.app.KeyguardManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -111,17 +112,31 @@ public class ReminderReceiver extends BroadcastReceiver {
         }
     }
 
-    /** 화면이 켜져 있으면 팝업 직접 표시 (꺼져/잠금 시엔 알림 FullScreenIntent가 처리) */
+    /**
+     * 화면이 켜져 있으면 팝업 표시.
+     * - 잠금 해제 상태 + 오버레이 권한 → 오버레이 창(앱 전환 없음, 뒤 앱 계속 재생)
+     * - 잠금 상태이거나 권한 없음 → 팝업 액티비티
+     * (화면이 꺼져 있으면 알림의 FullScreenIntent가 잠금화면 위에 처리)
+     */
     private static void showPopupIfScreenOn(Context context, int notifId,
                                             String name, String desc) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         if (pm == null || !pm.isInteractive()) return;
-        Intent popup = new Intent(context, ReminderPopupActivity.class);
-        popup.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        popup.putExtra("ids", new int[]{notifId});
-        popup.putExtra("names", new String[]{name});
-        popup.putExtra("descs", new String[]{desc});
-        context.startActivity(popup);
+
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        boolean locked = km != null && km.isKeyguardLocked();
+
+        if (!locked && ReminderOverlay.canShow(context)) {
+            ReminderOverlay.show(context.getApplicationContext(),
+                    new int[]{notifId}, new String[]{name}, new String[]{desc});
+        } else {
+            Intent popup = new Intent(context, ReminderPopupActivity.class);
+            popup.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            popup.putExtra("ids", new int[]{notifId});
+            popup.putExtra("names", new String[]{name});
+            popup.putExtra("descs", new String[]{desc});
+            context.startActivity(popup);
+        }
     }
 
     /** 반복 재알림 예약 (현재 시각 + INTERVAL_MIN 분 후) */
